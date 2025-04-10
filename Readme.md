@@ -1,0 +1,1 @@
+> Sitio web dinámico utilizando `ReactPHP`  para manejar múltiples solicitudes simultáneas de manera no bloqueante
