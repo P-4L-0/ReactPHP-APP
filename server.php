@@ -1,15 +1,17 @@
 <?php
 require 'vendor/autoload.php';
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 use React\Http\Server;
 use React\Http\Message\Response;
 use React\Socket\Server as SocketServer;
 use React\EventLoop\Factory;
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
+use Psr\Http\Message\ServerRequestInterface;
+
+
+// creacion de el loop de eventos
+$loop = Factory::create();
 
 // creacion de rutas
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
