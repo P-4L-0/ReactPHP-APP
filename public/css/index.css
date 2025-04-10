@@ -1,0 +1,10 @@
+*, ::after, ::before{
+    padding: 0;
+    margin: 1px;
+    box-sizing: border-box;
+}
+
+
+h1{
+    color:chartreuse;
+}

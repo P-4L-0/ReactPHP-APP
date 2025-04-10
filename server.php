@@ -1,6 +1,9 @@
 <?php
 require 'vendor/autoload.php';
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 use React\Http\Server;
 use React\Http\Message\Response;
 use React\Socket\Server as SocketServer;
@@ -8,20 +11,37 @@ use React\EventLoop\Factory;
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 
-// creacion de el loop de eventos
-$loop = Factory::create();
-
-
 // creacion de rutas
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     // Definir las rutas
     $r->addRoute('GET', '/', function () {
-        return new Response(200, ['Content-Type' => 'text/plain'], "¡Hola Mundo!");
+        $html = file_get_contents(__DIR__ . '/public/index.html');
+        return new Response(200, ['Content-Type' => 'text/html'], $html);
     });
 
-    $r->addRoute('GET', '/about', function () {
-        return new Response(200, ['Content-Type' => 'text/plain'], "Sobre nosotros");
+    $r->addRoute('GET', '/contact', function () {
+        $html = file_get_contents(__DIR__ . '/public/contact.html');
+        return new Response(200, ['Content-Type' => 'text/html'], $html);
     });
+
+    $r->addRoute('GET', '/data', function () {
+        $html = file_get_contents(__DIR__ . '/public/data.html');
+        return new Response(200, ['Content-Type' => 'text/html'], $html);
+    });
+
+
+    //ruta de servicio archivos estaticos
+    /* no sirve por ahora XD
+    $r->addRoute('GET', '/css/{file}', function ($vars) {
+        $filePath = __DIR__ . '/public/css/' . $vars['file'];
+
+        if (file_exists($filePath)) {
+            $cssContent = file_get_contents($filePath);
+            return new Response(200, ['Content-Type' => 'text/css'], $cssContent);
+        }
+
+        return new Response(404, ['Content-Type' => 'text/plain'], "CSS no encontrado");
+    });*/
 });
 
 // creacion del servidor http
@@ -56,5 +76,5 @@ try {
     echo "Servidor escuchando en 127.0.0.1:8080\n";
     $loop->run();
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage();
+    return new Response(500, ['Content-Type' => 'text/plain'], "Error interno del servidor: " . $e->getMessage());
 }
