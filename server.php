@@ -32,24 +32,11 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     });
 
 
-    //ruta de servicio archivos estaticos
-    /* no sirve por ahora XD
-    $r->addRoute('GET', '/css/{file}', function ($vars) {
-        $filePath = __DIR__ . '/public/css/' . $vars['file'];
-
-        if (file_exists($filePath)) {
-            $cssContent = file_get_contents($filePath);
-            return new Response(200, ['Content-Type' => 'text/css'], $cssContent);
-        }
-
-        return new Response(404, ['Content-Type' => 'text/plain'], "CSS no encontrado");
-    });*/
 });
 
 // creacion del servidor http
 $server = new Server(function ($request) use ($dispatcher) {
     /*-MANEJO DE RUTAS*/
-
     //obtener metodo
     $httpMethod = $request->getMethod();
 
@@ -59,6 +46,27 @@ $server = new Server(function ($request) use ($dispatcher) {
     //mathch con una ruta
     $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 
+    // Servir archivos estáticos desde /public
+    $filePath = __DIR__ . '/public' . $uri;
+    if ($httpMethod === 'GET' && file_exists($filePath) && is_file($filePath)) {
+        // Detectar el tipo de contenido (Content-Type)
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        $mimeTypes = [
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'svg' => 'image/svg+xml',
+            'ico' => 'image/x-icon',
+            'html' => 'text/html',
+        ];
+        $contentType = $mimeTypes[$extension] ?? 'application/octet-stream';
+        return new Response(200, ['Content-Type' => $contentType], file_get_contents($filePath));
+    }
+
+    // manejo de rutas invalidas
     switch ($routeInfo[0]) {
         case FastRoute\Dispatcher::NOT_FOUND:
             return new Response(404, ['Content-Type' => 'text/plain'], "Ruta no encontrada");
