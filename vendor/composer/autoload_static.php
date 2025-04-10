@@ -8,6 +8,7 @@ class ComposerStaticInitd98c9d93986fe76be75cc08d63446741
 {
     public static $files = array (
         'ad155f8f1cf0d418fe49e248db8c661b' => __DIR__ . '/..' . '/react/promise/src/functions_include.php',
+        '253c157292f75eb38082b5acb06f3f01' => __DIR__ . '/..' . '/nikic/fast-route/src/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -28,6 +29,7 @@ class ComposerStaticInitd98c9d93986fe76be75cc08d63446741
         'F' => 
         array (
             'Fig\\Http\\Message\\' => 17,
+            'FastRoute\\' => 10,
         ),
         'E' => 
         array (
@@ -71,6 +73,10 @@ class ComposerStaticInitd98c9d93986fe76be75cc08d63446741
         'Fig\\Http\\Message\\' => 
         array (
             0 => __DIR__ . '/..' . '/fig/http-message-util/src',
+        ),
+        'FastRoute\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/nikic/fast-route/src',
         ),
         'Evenement\\' => 
         array (
