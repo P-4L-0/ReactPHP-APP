@@ -3,78 +3,103 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Data</title>
+    <title>Comentarios</title>
     <link rel="stylesheet" href="/css/clients.css" />
     <script
       src="https://kit.fontawesome.com/7bcd40cb83.js"
       crossorigin="anonymous"
     ></script>
-    <!-- font awesome icons -->
   </head>
   <body>
-    <h1>Agregar Clientes</h1>
-    <form action="/dataClients" method="post">
-      <label for="name">Ingrese el nombre del cliente</label>
-      <input type="text" id="name"  name="name"required autocomplete="off"><br>
-      <label for="email">Ingrese el correo del cliente</label>
-      <input type="email" id="email" name="email" required autocomplete="off"><br>
-      <button>Ingresar</button>
-    </form>
+    <h1>Lista de Comentarios</h1>
 
-    <h1>Lista de Clientes</h1>
-    <table id="tasks-table" border="1">
+    <table id="comments-table" border="1">
       <thead>
         <tr>
           <th>Nombre</th>
           <th>Correo</th>
+          <th>Telefono</th>
+          <th>Asunto</th>
+          <th>Mensaje</th>
           <th><i class="fa-solid fa-trash"></i></th>
+          <th><i class="fa-solid fa-pen-to-square"></i></th>
         </tr>
       </thead>
       <tbody>
-        <!-- js -->
+        <!-- JS insertará filas aquí -->
       </tbody>
     </table>
     <script>
-      // Función para cargar los datos desde la ruta '/data'
-      fetch("/dataClients")
+      // Función para cargar los comentarios desde la ruta '/comments'
+      fetch("/comments")
         .then((response) => response.json())
         .then((data) => {
-          const tableBody = document.querySelector("#tasks-table tbody");
+          const tableBody = document.querySelector("#comments-table tbody");
 
           // Limpiar la tabla antes de llenarla
           tableBody.innerHTML = "";
 
-          // Iterar sobre los datos y agregarlos a la tabla
-          data.clients.forEach((clients) => {
+          // Iterar sobre los comentarios y agregarlos a la tabla
+          data.forEach((comment) => {
             const row = document.createElement("tr");
             row.innerHTML = `
-                        <td>${clients.name}</td>
-                        <td>${clients.email}</td>
-                        <td>
-                          <button onclick="deleteClient('${clients.email}')">Eliminar</button>
-                        </td>
-                    `;
+              <td>${comment.name}</td>
+              <td>${comment.email}</td>
+              <td>${comment.phone}</td>
+              <td>${comment.subject}</td>
+              <td>${comment.message}</td>
+              <td>
+                <button onclick="deleteComment(${comment.id})">Eliminar</button>
+              </td>
+              <td>
+                <button onclick="editComment(${comment.id})">Editar</button>  
+              </td>
+            `;
             tableBody.appendChild(row);
           });
         })
         .catch((error) => console.error("Error al cargar los datos:", error));
 
-      function deleteClient(email) {
-        if (!confirm("¿Estás seguro que quieres eliminar este cliente?"))
+      function deleteComment(id) {
+        if (!confirm("¿Estás seguro que quieres eliminar este comentario?"))
           return;
 
-        fetch(`/dataClients/${email}`, {
+        fetch(`/comments/${id}`, {
           method: "DELETE",
         })
           .then((res) => res.json())
           .then((data) => {
-            alert(data.message || "Cliente eliminado.");
-            location.reload(); 
+            alert(data.message || "Comentario eliminado.");
+            location.reload();
           })
           .catch((err) => {
             console.error(err);
-            alert("Error al eliminar el cliente.");
+            alert("Error al eliminar el comentario.");
           });
+      }
+
+      function editComment(id) {
+        const newSubject = prompt("Ingrese el nuevo asunto:");
+        const newMessage = prompt("Ingrese el nuevo mensaje:");
+
+        if (newSubject && newMessage) {
+          fetch(`/comments/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ subject: newSubject, message: newMessage }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              alert(data.message || "Comentario actualizado.");
+              location.reload();
+            })
+            .catch((err) => {
+              console.error(err);
+              alert("Error al actualizar el comentario.");
+            });
+        }
       }
     </script>
   </body>

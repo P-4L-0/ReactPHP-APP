@@ -35,94 +35,83 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) use ($loop) {
         return new Response(200, ['Content-Type' => 'text/html'], $html);
     });
 
-    //ruta para obtener clientes
-    $r->addRoute('GET', '/dataClients', function () use ($loop) {
+    //ruta para obtener 
+    $r->addRoute('GET', '/comments', function () {
         try {
-            $dataFile = __DIR__ . '/data/clients.json';
+            $pdo = getDBConnection();
+            $stmt = $pdo->query("SELECT * FROM comments");
+            $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Usar promesa para leer el archivo
-            $promise = React\Promise\resolve(file_get_contents($dataFile));
-
-            return $promise->then(function ($data) {
-                $dataDecoded = json_decode($data, true);
-                return new Response(200, ['Content-Type' => 'application/json'], json_encode($dataDecoded));
-            }, function () {
-                return new Response(404, ['Content-Type' => 'text/plain'], "Datos no encontrados");
-            });
+            return new Response(200, ['Content-Type' => 'application/json'], json_encode($comments));
         } catch (Exception $e) {
-            return new Response(500, ['Content-Type' => 'application/json'], json_encode([
-                'error' => 'Error del servidor: ' . $e->getMessage()
-            ]));
+            return new Response(500, ['Content-Type' => 'application/json'], json_encode(['error' => 'Error al obtener comentarios: ' . $e->getMessage()]));
         }
     });
 
-    //ruta para agregar clientes
-    $r->addRoute('POST', '/dataClients', function (ServerRequestInterface $request) use ($loop) {
-        $dataFile = __DIR__ . '/data/clients.json';
-        $inputClients = $request->getParsedBody();
+    //ruta para agregar 
+    $r->addRoute('POST', '/comments', function (ServerRequestInterface $request) use ($loop) {
+        $input = $request->getParsedBody();
 
+        if (isset($input['name'], $input['email'], $input['subject'], $input['message'])) {
+            try {
+                $pdo = getDBConnection();
+                $stmt = $pdo->prepare("INSERT INTO comments (name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$input['name'], $input['email'], $input['phone'], $input['subject'], $input['message']]);
 
-        if (isset($inputClients['name'], $inputClients['email'])) {
-            return React\Promise\resolve(file_get_contents($dataFile))
-                ->then(function ($data) use ($inputClients, $dataFile) {
-                    $existingData = json_decode($data, true) ?? ['clients' => []];
-                    $existingData['clients'][] = [
-                        'name' => $inputClients['name'],
-                        'email' => $inputClients['email']
-                    ];
-
-                    // Escribir en el archivo de manera asíncrona
-                    file_put_contents($dataFile, json_encode($existingData, JSON_PRETTY_PRINT));
-
-                    return new Response(201, ['Content-Type' => 'application/json'], json_encode(['message' => 'Tarea agregada exitosamente']));
-                })
-                ->otherwise(function () {
-                    return new Response(500, ['Content-Type' => 'application/json'], json_encode(['error' => 'Error al leer archivo']));
-                });
+                return new Response(201, ['Content-Type' => 'application/json'], json_encode(['message' => 'Comentario agregado exitosamente']));
+            } catch (Exception $e) {
+                return new Response(500, ['Content-Type' => 'application/json'], json_encode(['error' => 'Error al agregar comentario: ' . $e->getMessage()]));
+            }
         } else {
-            return new Response(400, ['Content-Type' => 'application/json'], json_encode(['error' => 'Datos incompletos']));
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode(['error' => 'Datos incompletos para el comentario']));
         }
     });
 
-    //ruta para eliminar clientes
-    $r->addRoute('DELETE', '/dataClients/{email}', function (ServerRequestInterface $request, $args) use ($loop) {
+
+    //ruta para eliminar 
+    $r->addRoute('DELETE', '/comments/{id}', function (ServerRequestInterface $request, $args) use ($loop) {
+        $commentId = $args['id'];
+
         try {
-            $dataFile = __DIR__ . '/data/clients.json';
-            $email = $args['email'];
+            $pdo = getDBConnection();
+            $stmt = $pdo->prepare("DELETE FROM comments WHERE id = ?");
+            $stmt->execute([$commentId]);
 
-            return React\Promise\resolve(file_get_contents($dataFile))
-                ->then(function ($data) use ($email, $dataFile) {
-                    $existingData = json_decode($data, true);
-                    $clientIndex = null;
-
-                    foreach ($existingData['clients'] as $index => $client) {
-                        if ($client['email'] == $email) {
-                            $clientIndex = $index;
-                            break;
-                        }
-                    }
-
-                    if ($clientIndex === null) {
-                        return new Response(404, ['Content-Type' => 'application/json'], json_encode(['error' => 'Cliente no encontrado']));
-                    }
-
-                    // Eliminar el cliente
-                    array_splice($existingData['clients'], $clientIndex, 1);
-
-                    // Escribir los nuevos datos en el archivo
-                    file_put_contents($dataFile, json_encode($existingData, JSON_PRETTY_PRINT));
-
-                    return new Response(200, ['Content-Type' => 'application/json'], json_encode(['message' => 'Cliente eliminado exitosamente']));
-                })
-                ->otherwise(function () {
-                    return new Response(500, ['Content-Type' => 'application/json'], json_encode(['error' => 'Error al leer archivo']));
-                });
+            if ($stmt->rowCount() > 0) {
+                return new Response(200, ['Content-Type' => 'application/json'], json_encode(['message' => 'Comentario eliminado exitosamente']));
+            } else {
+                return new Response(404, ['Content-Type' => 'application/json'], json_encode(['error' => 'Comentario no encontrado']));
+            }
         } catch (Exception $e) {
-            return new Response(500, ['Content-Type' => 'application/json'], json_encode([
-                'error' => 'Error del servidor: ' . $e->getMessage()
-            ]));
+            return new Response(500, ['Content-Type' => 'application/json'], json_encode(['error' => 'Error al eliminar comentario: ' . $e->getMessage()]));
         }
     });
+
+    //ruta para actualizae
+    $r->addRoute('PUT', '/comments/{id}', function (ServerRequestInterface $request, $args) use ($loop) {
+        $commentId = $args['id'];
+        $body = (string) $request->getBody();
+        $input = json_decode($body, true);
+    
+        if (isset($input['subject'], $input['message'])) {
+            try {
+                $pdo = getDBConnection();
+                $stmt = $pdo->prepare("UPDATE comments SET subject = ?, message = ? WHERE id = ?");
+                $stmt->execute([$input['subject'], $input['message'], $commentId]);
+    
+                if ($stmt->rowCount() > 0) {
+                    return new Response(200, ['Content-Type' => 'application/json'], json_encode(['message' => 'Comentario actualizado exitosamente']));
+                } else {
+                    return new Response(404, ['Content-Type' => 'application/json'], json_encode(['error' => 'Comentario no encontrado']));
+                }
+            } catch (Exception $e) {
+                return new Response(500, ['Content-Type' => 'application/json'], json_encode(['error' => 'Error al actualizar comentario: ' . $e->getMessage()]));
+            }
+        } else {
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode(['error' => 'Datos incompletos para la actualización']));
+        }
+    });
+    
 
 });
 
@@ -182,6 +171,11 @@ $server = new Server(function ($request) use ($dispatcher) {
     }
 
 });
+
+function getDBConnection(): PDO
+{
+    return new PDO('sqlite:' . __DIR__ . '/data/comments.db');
+}
 
 // try catch para el manejo de errores
 try {
