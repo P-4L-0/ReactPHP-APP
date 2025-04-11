@@ -7,6 +7,6 @@
 - [x] Ruta de Datos
 - [x] Archivos estáticos (/styles.css)
 - [x] Manejo Asíncrono de Solicitudes
-- [ ] Control de errores
-- [ ] Simultaneidad:
-- [ ] Operaciones CRUD
+- [x] Control de errores
+- [x] Simultaneidad:
+- [x] Operaciones CRUD
