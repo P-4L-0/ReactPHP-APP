@@ -200,7 +200,8 @@ $server = new Server(function ($request) use ($dispatcher) {
     // manejo de rutas invalidas
     switch ($routeInfo[0]) {
         case FastRoute\Dispatcher::NOT_FOUND:
-            return new Response(404, ['Content-Type' => 'text/plain'], "Ruta no encontrada");
+            $notFoundPage = file_get_contents(__DIR__ . '/public/404.html');
+            return new Response(404, ['Content-Type' => 'text/html'], $notFoundPage);
         case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
             return new Response(405, ['Content-Type' => 'text/plain'], "Método no permitido");
         case FastRoute\Dispatcher::FOUND:

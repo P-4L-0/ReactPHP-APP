@@ -3,97 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Comentarios</title>
-    <link rel="stylesheet" href="/css/clients.css" />
-    <script src="https://kit.fontawesome.com/7bcd40cb83.js" crossorigin="anonymous"></script>
+    <title>Index</title>
+    <link rel="stylesheet" href="/css/index.css" />
   </head>
   <body>
-    <h1>Lista de Comentarios</h1>
-
-    <table id="comments-table" border="1">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Correo</th>
-          <th>Telefono</th>
-          <th>Asunto</th>
-          <th>Mensaje</th>
-          <th><i class="fa-solid fa-trash"></i></th>
-          <th><i class="fa-solid fa-pen-to-square"></i></th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- JS insertará filas aquí -->
-      </tbody>
-    </table>
-
-    <script>
-      // Cargar los comentarios desde la ruta '/comments'
-      fetch("/comments")
-        .then((response) => response.json())
-        .then((data) => {
-          const tableBody = document.querySelector("#comments-table tbody");
-          tableBody.innerHTML = "";
-
-          data.forEach((comment) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${comment.name}</td>
-              <td>${comment.email}</td>
-              <td>${comment.phone}</td>
-              <td>${comment.subject}</td>
-              <td>${comment.message}</td>
-              <td>
-                <button onclick="deleteComment(${comment.id})">Eliminar</button>
-              </td>
-              <td>
-                <button onclick="editComment(${comment.id})">Editar</button>  
-              </td>
-            `;
-            tableBody.appendChild(row);
-          });
-        })
-        .catch((error) => console.error("Error al cargar los datos:", error));
-
-      function deleteComment(id) {
-        if (!confirm("¿Estás seguro que quieres eliminar este comentario?"))
-          return;
-
-        fetch(`/comments/${id}`, { method: "DELETE" })
-          .then((res) => res.json())
-          .then((data) => {
-            alert(data.message || "Comentario eliminado.");
-            location.reload();
-          })
-          .catch((err) => {
-            console.error(err);
-            alert("Error al eliminar el comentario.");
-          });
-      }
-
-      function editComment(id) {
-        const newSubject = prompt("Ingrese el nuevo asunto:");
-        const newMessage = prompt("Ingrese el nuevo mensaje:");
-
-        if (newSubject && newMessage) {
-          fetch(`/comments/${id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ subject: newSubject, message: newMessage }),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              alert(data.message || "Comentario actualizado.");
-              location.reload();
-            })
-            .catch((err) => {
-              console.error(err);
-              alert("Error al actualizar el comentario.");
-            });
-        }
-      }
-    </script>
+    <!DOCTYPE html>
+    <html lang="es">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Inicio</title>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Bienvenido a mi sitio web</h1>
+          <p>Este es el punto de entrada principal al sitio.</p>
+          <a href="/contact" class="button">Ir al formulario de contacto</a>
+        </div>
+      </body>
+    </html>
   </body>
 </html>

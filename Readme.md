@@ -8,5 +8,5 @@
 - [x] Archivos estáticos (/styles.css)
 - [x] Manejo Asíncrono de Solicitudes
 - [x] Control de errores
-- [x] Simultaneidad:
+- [x] Simultaneidad
 - [x] Operaciones CRUD
