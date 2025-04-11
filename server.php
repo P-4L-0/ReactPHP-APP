@@ -49,23 +49,46 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) use ($loop) {
     });
 
     //ruta para agregar 
-    $r->addRoute('POST', '/comments', function (ServerRequestInterface $request) use ($loop) {
+    $r->addRoute('POST', '/comments', function (ServerRequestInterface $request) {
         $input = $request->getParsedBody();
 
-        if (isset($input['name'], $input['email'], $input['subject'], $input['message'])) {
-            try {
-                $pdo = getDBConnection();
-                $stmt = $pdo->prepare("INSERT INTO comments (name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([$input['name'], $input['email'], $input['phone'], $input['subject'], $input['message']]);
+        $name = trim($input['name'] ?? '');
+        $email = trim($input['email'] ?? '');
+        $phone = trim($input['phone'] ?? '');
+        $subject = trim($input['subject'] ?? '');
+        $message = trim($input['message'] ?? '');
 
-                return new Response(201, ['Content-Type' => 'application/json'], json_encode(['message' => 'Comentario agregado exitosamente']));
-            } catch (Exception $e) {
-                return new Response(500, ['Content-Type' => 'application/json'], json_encode(['error' => 'Error al agregar comentario: ' . $e->getMessage()]));
-            }
-        } else {
-            return new Response(400, ['Content-Type' => 'application/json'], json_encode(['error' => 'Datos incompletos para el comentario']));
+        // Validaciones básicas
+        if ($name === '' || $email === '' || $subject === '' || $message === '') {
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode(['error' => 'Todos los campos obligatorios deben estar completos.']));
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode(['error' => 'Correo electrónico inválido.']));
+        }
+
+        if (strlen($message) > 1000) {
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode(['error' => 'El mensaje es demasiado largo.']));
+        }
+
+        // Sanitización antes de insertar
+        $name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+        $phone = htmlspecialchars($phone, ENT_QUOTES, 'UTF-8');
+        $subject = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
+        $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+
+        try {
+            $pdo = getDBConnection();
+            $stmt = $pdo->prepare("INSERT INTO comments (name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $email, $phone, $subject, $message]);
+
+            return new Response(201, ['Content-Type' => 'application/json'], json_encode(['message' => 'Comentario guardado exitosamente.']));
+        } catch (Exception $e) {
+            return new Response(500, ['Content-Type' => 'application/json'], json_encode(['error' => 'Error al guardar: ' . $e->getMessage()]));
         }
     });
+
 
 
     //ruta para eliminar 
@@ -92,26 +115,53 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) use ($loop) {
         $commentId = $args['id'];
         $body = (string) $request->getBody();
         $input = json_decode($body, true);
-    
-        if (isset($input['subject'], $input['message'])) {
-            try {
-                $pdo = getDBConnection();
-                $stmt = $pdo->prepare("UPDATE comments SET subject = ?, message = ? WHERE id = ?");
-                $stmt->execute([$input['subject'], $input['message'], $commentId]);
-    
-                if ($stmt->rowCount() > 0) {
-                    return new Response(200, ['Content-Type' => 'application/json'], json_encode(['message' => 'Comentario actualizado exitosamente']));
-                } else {
-                    return new Response(404, ['Content-Type' => 'application/json'], json_encode(['error' => 'Comentario no encontrado']));
-                }
-            } catch (Exception $e) {
-                return new Response(500, ['Content-Type' => 'application/json'], json_encode(['error' => 'Error al actualizar comentario: ' . $e->getMessage()]));
+
+        if (!isset($input['subject'], $input['message'])) {
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode([
+                'error' => 'Datos incompletos para la actualización.'
+            ]));
+        }
+
+        // Validar y sanitizar entradas
+        $subject = trim($input['subject']);
+        $message = trim($input['message']);
+
+        if ($subject === '' || $message === '') {
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode([
+                'error' => 'Asunto y mensaje no pueden estar vacíos.'
+            ]));
+        }
+
+        if (strlen($message) > 1000) {
+            return new Response(400, ['Content-Type' => 'application/json'], json_encode([
+                'error' => 'Mensaje demasiado largo. Máximo 1000 caracteres.'
+            ]));
+        }
+
+        // Sanitizar entradas para evitar XSS
+        $subject = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
+        $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+
+        try {
+            $pdo = getDBConnection();
+            $stmt = $pdo->prepare("UPDATE comments SET subject = ?, message = ? WHERE id = ?");
+            $stmt->execute([$subject, $message, $commentId]);
+
+            if ($stmt->rowCount() > 0) {
+                return new Response(200, ['Content-Type' => 'application/json'], json_encode([
+                    'message' => 'Comentario actualizado exitosamente.'
+                ]));
+            } else {
+                return new Response(404, ['Content-Type' => 'application/json'], json_encode([
+                    'error' => 'Comentario no encontrado o sin cambios.'
+                ]));
             }
-        } else {
-            return new Response(400, ['Content-Type' => 'application/json'], json_encode(['error' => 'Datos incompletos para la actualización']));
+        } catch (Exception $e) {
+            return new Response(500, ['Content-Type' => 'application/json'], json_encode([
+                'error' => 'Error al actualizar comentario: ' . $e->getMessage()
+            ]));
         }
     });
-    
 
 });
 
