@@ -1,12 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Data</title>
-    <link rel="stylesheet" href="/css/data.css">
-</head>
-<body>
-    <h1>Data</h1>
-</body>
+    <link rel="stylesheet" href="/css/clients.css" />
+    <script
+      src="https://kit.fontawesome.com/7bcd40cb83.js"
+      crossorigin="anonymous"
+    ></script>
+    <!-- font awesome icons -->
+  </head>
+  <body>
+    <h1>Agregar Clientes</h1>
+    <form action="/dataClients" method="post">
+      <label for="name">Ingrese el nombre del cliente</label>
+      <input type="text" id="name"  name="name"required autocomplete="off"><br>
+      <label for="email">Ingrese el correo del cliente</label>
+      <input type="email" id="email" name="email" required autocomplete="off"><br>
+      <button>Ingresar</button>
+    </form>
+
+    <h1>Lista de Clientes</h1>
+    <table id="tasks-table" border="1">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th><i class="fa-solid fa-trash"></i></th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- js -->
+      </tbody>
+    </table>
+    <script>
+      // Función para cargar los datos desde la ruta '/data'
+      fetch("/dataClients")
+        .then((response) => response.json())
+        .then((data) => {
+          const tableBody = document.querySelector("#tasks-table tbody");
+
+          // Limpiar la tabla antes de llenarla
+          tableBody.innerHTML = "";
+
+          // Iterar sobre los datos y agregarlos a la tabla
+          data.clients.forEach((clients) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                        <td>${clients.name}</td>
+                        <td>${clients.email}</td>
+                        <td>
+                          <button onclick="deleteClient('${clients.email}')">Eliminar</button>
+                        </td>
+                    `;
+            tableBody.appendChild(row);
+          });
+        })
+        .catch((error) => console.error("Error al cargar los datos:", error));
+
+      function deleteClient(email) {
+        if (!confirm("¿Estás seguro que quieres eliminar este cliente?"))
+          return;
+
+        fetch(`/dataClients/${email}`, {
+          method: "DELETE",
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            alert(data.message || "Cliente eliminado.");
+            location.reload(); 
+          })
+          .catch((err) => {
+            console.error(err);
+            alert("Error al eliminar el cliente.");
+          });
+      }
+    </script>
+  </body>
 </html>

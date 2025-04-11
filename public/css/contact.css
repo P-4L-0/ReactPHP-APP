@@ -5,6 +5,52 @@
 }
 
 
-h1{
-    color: aquamarine;
+html{
+    font-size:  62.5%;
+}
+
+body{
+    background: #3E5C76;
+    width: 100%;
+    height: 100%;
+}
+
+main{
+    width: 100%;
+    height: auto;
+    max-width: 30%;
+    margin: 5rem auto 0;
+}
+
+#form-container{
+    padding: 0.5rem;
+    font-size: large; 
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+    color: #F0EBD8;
+}
+
+input, textarea{
+    width: 100%;
+    height: 3rem;
+    outline: none;
+    padding: 0.5rem;
+    color: #0D1321;
+}
+
+button{
+    width: 100%;
+    max-width: 30rem;
+    margin: 0 auto;
+    height: 3rem;
+    border-radius: 0.5rem;
+    transition: ease-in-out .3s;
+    cursor: pointer;
+}
+
+button:hover{
+    background-color: #748CAB;
 }

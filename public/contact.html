@@ -1,12 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Conectacto</title>
-    <link rel="stylesheet" href="/css/contact.css">
-</head>
-<body>
-    <h1>Contacto</h1>
-</body>
+    <link rel="stylesheet" href="/css/contact.css" />
+  </head>
+  <body>
+    <main>
+        <div id="form-container">
+            <form action="/send-contact" method="POST">
+                <label for="name">Nombre completo:</label>
+                <input type="text" id="name" name="name" required autocomplete="off"/><br /><br />
+        
+                <label for="email">Correo electrónico:</label>
+                <input type="email" id="email" name="email" required autocomplete="off"/><br /><br />
+        
+                <label for="phone">Teléfono (opcional):</label>
+                <input type="tel" id="phone" name="phone" /><br /><br />
+        
+                <label for="subject">Asunto:</label>
+                <input type="text" id="subject" name="subject" required /><br /><br />
+        
+                <label for="message">Mensaje:</label>
+                <textarea id="message" name="message" rows="5" required></textarea
+                ><br /><br />
+        
+                <button type="submit">Enviar</button>
+              </form>
+        </div>
+    </main>
+  </body>
 </html>
