@@ -10,3 +10,5 @@
 - [x] Control de errores
 - [x] Simultaneidad
 - [x] Operaciones CRUD
+
+execute the database whit ```php data/init_db.php``` 
